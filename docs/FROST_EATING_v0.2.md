@@ -40,6 +40,8 @@ On-device forecasts of eating habits and routines over the next 24 hours.
 - Never an LLM, or any AI SDK, to produce or adjust a probability.
 - Never a meal-timing prediction (§1.3).
 - Never acting on anything: Frost returns forecasts and text. It does not schedule, notify, log or change state.
+- Never treating a single missed day as a break or a reset, in any branch, summary or internal signal. One miss
+  does not undo a habit (Lally et al. 2010).
 
 ### 1.2 Hard rules from the gate (cuts Rahul approved)
 
@@ -206,6 +208,9 @@ For a binary event (e.g. "group *g* appears in slot *s*"):
 
 As history grows, the person's own rate dominates; with no history, the forecast is the population rate.
 
+**Inputs are context features:** slot, weekday or weekend, and day type. Habits are associations between a
+context and a response, so the context, not the clock or a streak count, is what predicts behaviour.
+
 `food_group_gap` over the remaining slots of the window, assuming slot independence:
 P(gap) = ∏ over remaining slots (1 − p_slot). Independence is an assumption; §6 tests calibration, and §4.2
 handles the case where it clearly fails.
@@ -274,6 +279,10 @@ once the first two weeks of shadow data exist.
 1. It fails baseline (b) at day 60.
 2. It increases eat-more or eat-less prompts for low-appetite or selective-eater profiles.
 3. Guide-suggestion acceptance is no better than the deterministic version's.
+
+**Why day 60.** Day 60 tests whether the forecasts are accurate, not whether anyone has formed a habit.
+Individual habit change takes roughly 2–8 months, longer for complex behaviours (Lally et al. 2010), so
+habit formation is not a kill criterion and no forecast may promise a timeline.
 
 **Never scored:** comparisons between choices made by simulation ("what if you'd had dal"). They are
 counterfactual and have no observed outcome.
