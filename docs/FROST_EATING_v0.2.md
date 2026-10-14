@@ -31,7 +31,7 @@ On-device forecasts of eating habits and routines over the next 24 hours.
 |---|---|---|
 | `food_group_gap` | A food group stays absent from the person's logs for the rest of the window | Yes, as a gap, never as a deficiency |
 | `no_log_in_slot` | A meal slot passes with nothing logged | **Never.** Internal signal only (§1.2) |
-| `eating_out` | A meal is eaten away from home | Yes. Where location isn't recorded, the value is *unknown*, never "at home" |
+| `eating_out` | A meal is eaten away from home | Yes, once the host app records it. Needs an "eaten out" field on logged meals; until one exists, every outcome is *unknown* and the branch is not emitted. Never assume "at home" |
 | `rebalance_gap` | Coupled same-day check: given what is already logged, which group would round out the day | Yes, framed as filling a gap, **never "eat less later"** |
 
 ### 1.1 Never
@@ -276,17 +276,22 @@ For `rebalance_gap`, baseline (b) is the host app's rule-based same-day rebalanc
 after launch: it suggests a group that would round out the day and never says "eat less later"). Until it
 exists, the `rebalance_gap` baseline is the stronger of persistence and the person's own base rate.
 
-**Margin.** Set in advance, before the beta: the required BSS margin per branch kind, with confidence intervals
-**clustered by user**. Rahul sets the number; this brief leaves a placeholder: `MARGIN = TBD (set before beta)`.
+**Primary test** (decided by Rahul, 2026-10-14). The decision rests on `food_group_gap` alone, the most frequent
+branch kind. The other kinds are scored and reported the same way but don't decide. Fifty beta users can't power
+four separate tests: the gate's data review estimated about 70 for one comparison at a 0.01 gain.
 
-**Allowed outcomes.** Pass, kill, or **"inconclusive, extend"**. Fifty beta users is underpowered: the gate's
-data review estimated about 70 are needed to detect a 0.01 gain. Re-check that estimate with the real variance
-once the first two weeks of shadow data exist.
+**Margin** (decided by Rahul, 2026-10-14). For the primary test, ΔBrier = BS_baseline − BS_model, with a 95%
+confidence interval clustered by user:
+- **Pass:** ΔBrier ≥ 0.01 **and** the interval's lower bound is above zero.
+- **Kill:** the interval's upper bound is below 0.01, so the forecast is confidently short of the margin.
+- **Inconclusive, extend:** anything else. Re-check the power estimate with the real variance once the first two
+  weeks of shadow data exist.
 
 **Kill if any of:**
-1. It fails baseline (b) at day 60.
+1. The primary test returns **kill** against baseline (b) at day 60.
 2. It increases eat-more or eat-less prompts for low-appetite or selective-eater profiles.
-3. Guide-suggestion acceptance is no better than the deterministic version's.
+3. Once the host app's Guide suggestions ship, their acceptance is no better than the deterministic version's.
+   This criterion can't be measured before then and doesn't apply to the day-60 review.
 
 **Why day 60.** Day 60 tests whether the forecasts are accurate, not whether anyone has formed a habit.
 Individual habit change takes roughly 2–8 months, longer for complex behaviours (Lally et al. 2010), so
@@ -305,7 +310,7 @@ counterfactual and have no observed outcome.
 | Eating policy (branch kinds, text rules), priors tables and their mapping, personas, fixture generator | `packages/eating` (new) | AGPL-3.0 |
 | Host-app reader | **In the host app, never in Frost.** Not in `packages/readers`. | Host app's own |
 
-**Decision taken in this brief:** eating policy, priors mapping and personas live in Frost, under AGPL, in
+**Decided by Rahul, 2026-10-14:** eating policy, priors mapping and personas live in Frost, under AGPL, in
 `packages/eating`. Reason: they need public review and the synthetic tests live beside them. The host app may
 import only MIT code, so at integration time the host app either re-implements the policy layer or receives a
 separate licence from the copyright holder. That second route needs every contribution to be licensable, hence:
@@ -343,3 +348,6 @@ Recorded so it isn't lost. None of this starts before the host app's December la
 - **v0.2.0-draft — 2026-10-13.** Eating domain. Public priors exception, per-source grants, ledger dropped for
   eating, server aggregates struck, three-state resolution, beta-binomial method, kill criterion. Awaiting
   Rahul's approval.
+- **v0.2.0-draft, review 1 — 2026-10-14.** Rahul's decisions: kill margin, one primary test (`food_group_gap`),
+  eating layer in Frost under AGPL. Guide-acceptance criterion deferred until Guide ships; `eating_out` waits
+  for an eaten-out field.
