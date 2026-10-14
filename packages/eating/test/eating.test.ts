@@ -71,10 +71,42 @@ describe("eating contracts",()=>{
     expect(()=>forecastGaps(f.snapshot,[{...f.opportunities[0]!,windowEnd:"2026-10-01T00:00:00Z"}])).toThrow("horizon");
     expect(forecastGaps(f.snapshot,[])).toEqual([]);
   });
-  it("uses only gap copy for all profiles and emits no excluded branch kinds",()=>{
-    const banned=/weight|body|health|nutrient|medical|deficien|shortfall|calorie|protein|carb|vitamin|iron|you['’]ll skip|eat more|eat less|reset|streak/i;
+  it("uses factual logging copy without likelihood or banned wording",()=>{
+    const banned=/weight|body|health|nutrient|medical|deficien|shortfall|calorie|protein|carb|vitamin|iron|you['’]ll skip|eat more|eat less|reset|streak|likely|unlikely|probably|chance|forecast|predict|\d|%/i;
+    let visible = 0;
     for(const f of generateFixtures(71))for(const branch of forecastGaps(f.snapshot,f.opportunities)){
-      expect(branch.kind).toBe("food_group_gap");expect(branch.internalOnly).toBe(false);expect(branch.summary).toContain("gap to fill");expect(branch.summary).not.toMatch(banned);
+      expect(branch.kind).toBe("food_group_gap");
+      if(branch.internalOnly){expect(branch.summary).toBeNull();continue;}
+      visible++;
+      expect(branch.summary).toMatch(/^No .+ logged yet today\. There's room to add some if it fits your choices\.$/);
+      expect(branch.summary).not.toMatch(banned);
+    }
+    expect(visible).toBe(20);
+    const f=fixture();
+    expect(forecastGaps(f.snapshot,f.opportunities).find(b=>b.subject==="vegetables")!.summary)
+      .toBe("No vegetables logged yet today. There's room to add some if it fits your choices.");
+  });
+  for(const appetite of ["low","selective"] as const) it(`keeps every ${appetite} profile branch internal and scorable`,()=>{
+    const f=fixture();const typical=forecastGaps(f.snapshot,f.opportunities);
+    f.snapshot.profile.appetite=appetite;
+    const branches=forecastGaps(f.snapshot,f.opportunities);
+    expect(branches).toHaveLength(12);
+    expect(branches.map(b=>b.probability)).toEqual(typical.map(b=>b.probability));
+    for(const branch of branches){expect(branch.internalOnly).toBe(true);expect(branch.summary).toBeNull();}
+    const pairs=branches.map(branch=>({branch,resolution:{branchId:branch.id,occurred:true,resolvedAt:branch.windowEnd},neverShown:true}));
+    expect(scoreShadow(pairs)).toEqual(brierScore(typical.map(b=>({probability:b.probability,occurred:true}))));
+  });
+  it("never suggests fats/oils or herbs/spices for any profile but preserves scoring",()=>{
+    for(const appetite of ["typical","low","selective"] as const){
+      const f=fixture();f.snapshot.profile.appetite=appetite;
+      const branches=forecastGaps(f.snapshot,f.opportunities).filter(b=>b.subject==="fats_oils" || b.subject==="herbs_spices");
+      expect(branches).toHaveLength(2);
+      for(const branch of branches){
+        expect(branch.internalOnly).toBe(true);expect(branch.summary).toBeNull();
+        expect(branch.probability).toBeGreaterThanOrEqual(0);expect(branch.probability).toBeLessThanOrEqual(1);
+      }
+      const pairs=branches.map(branch=>({branch,resolution:{branchId:branch.id,occurred:true,resolvedAt:branch.windowEnd},neverShown:true}));
+      expect(scoreShadow(pairs).resolved).toBe(2);
     }
   });
   it("scores only never-shown matching resolutions",()=>{
