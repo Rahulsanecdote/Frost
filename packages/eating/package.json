@@ -1,0 +1,20 @@
+{
+  "name": "@frost/eating",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --reporter=verbose --silent=false"
+  },
+  "dependencies": {
+    "@frost/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.2"
+  }
+}
