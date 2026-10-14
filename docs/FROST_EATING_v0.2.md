@@ -1,7 +1,6 @@
 # Frost brief v0.2 — eating domain
 
-Version 0.2.0-draft · 2026-10-13 · **DRAFT for Rahul's review.** No code is written from this brief until Rahul
-approves it. It extends [`FROST_AGENTS.md`](FROST_AGENTS.md) (v0.1.2); where the two disagree, this file wins for
+Version 0.2.0 · 2026-10-14 · **Approved by Rahul, 2026-10-14.** Work may now be built from this brief. It extends [`FROST_AGENTS.md`](FROST_AGENTS.md) (v0.1.2); where the two disagree, this file wins for
 the eating domain and v0.1.2 still governs the calendar domain.
 
 This repo is public. Nothing here describes a real person, and nothing here copies code, file paths or internal
@@ -351,3 +350,4 @@ Recorded so it isn't lost. None of this starts before the host app's December la
 - **v0.2.0-draft, review 1 — 2026-10-14.** Rahul's decisions: kill margin, one primary test (`food_group_gap`),
   eating layer in Frost under AGPL. Guide-acceptance criterion deferred until Guide ships; `eating_out` waits
   for an eaten-out field.
+- **v0.2.0 — 2026-10-14.** Approved by Rahul. Building may start.

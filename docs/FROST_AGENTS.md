@@ -3,7 +3,7 @@ Version 0.1.2 · 2026-09-24 · Handoff from Rimuru (strategy/architecture) to co
 
 This document is self-contained. Execute from it without conversation history.
 
-> **Eating domain:** v0.2 is drafted in [`FROST_EATING_v0.2.md`](FROST_EATING_v0.2.md) and awaits Rahul's approval. Until it is approved, nothing is built from it; once approved, it wins over this file for the eating domain.
+> **Eating domain:** v0.2 in [`FROST_EATING_v0.2.md`](FROST_EATING_v0.2.md) was approved by Rahul on 2026-10-14. It wins over this file for the eating domain.
 
 ---
 
@@ -237,5 +237,5 @@ On completion, append a section `## Task 1 report` to this file with: engine vs 
 - **v0.1.0 — 2026-09-24.** Initial handoff. Scope: engine + calibration test.
 - **v0.1.1 — 2026-09-24.** Fixtures reweighted toward overrun-cascade and commitment-slip days after competitor scan; subset Brier test added.
 - **v0.1.2 — 2026-09-24.** Business model locked: free + OSS (engine MIT, app AGPL), revenue from Pro features and engine licensing; zero-marginal-cost constraint added.
-- **v0.2.0-draft — 2026-10-13.** Eating domain drafted in `FROST_EATING_v0.2.md`; awaiting approval.
+- **v0.2.0 — 2026-10-14.** Eating domain in `FROST_EATING_v0.2.md`, approved by Rahul.
 - Previously planned as v0.2.0 — `packages/readers` (Google Calendar, Maps Distance Matrix, Gmail commitment extraction via Vercel AI SDK).
