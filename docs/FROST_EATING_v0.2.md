@@ -40,6 +40,10 @@ On-device forecasts of eating habits and routines over the next 24 hours.
 - Never an LLM, or any AI SDK, to produce or adjust a probability.
 - Never a meal-timing prediction (§1.3).
 - Never acting on anything: Frost returns forecasts and text. It does not schedule, notify, log or change state.
+- Never producing or changing a calorie or macronutrient number. Plan and meal nutrition is always computed
+  from food-composition data by the host app; Frost's outputs are probabilities and text, never nutrition values.
+- Never generating a meal plan. Frost may inform which suggestions a plan offers (for example, a food group that
+  is likely to stay missing today); the host app's planner chooses the meals, and its numbers come from food data.
 - Never treating a single missed day as a break or a reset, in any branch, summary or internal signal. One miss
   does not undo a habit (Lally et al. 2010).
 
@@ -267,6 +271,10 @@ Validation command, unchanged: `pnpm install && pnpm -r typecheck && pnpm -r tes
 - (a) persistence, or the person's own trailing base rate; and
 - (b) the host app's existing deterministic rules (usual-slot frequency, food-group coverage gaps).
   The real competitor is the code the host app already has.
+
+For `rebalance_gap`, baseline (b) is the host app's rule-based same-day rebalancer once it ships (planned for
+after launch: it suggests a group that would round out the day and never says "eat less later"). Until it
+exists, the `rebalance_gap` baseline is the stronger of persistence and the person's own base rate.
 
 **Margin.** Set in advance, before the beta: the required BSS margin per branch kind, with confidence intervals
 **clustered by user**. Rahul sets the number; this brief leaves a placeholder: `MARGIN = TBD (set before beta)`.
