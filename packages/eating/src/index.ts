@@ -5,7 +5,7 @@ import type { Score } from "@frost/engine";
 import { FOOD_GROUPS, loadPriors } from "./priors.js";
 import type { EatingBranch, EatingSnapshot, FoodGroup, Grant, MealLog, MealSlot, Resolution } from "./types.js";
 
-// Four pseudo-opportunities keep sparse histories near the placeholder prior while allowing personal evidence to dominate.
+// Four pseudo-opportunities keep sparse histories near the population prior while allowing personal evidence to dominate.
 export const PRIOR_STRENGTH = 4;
 export class PermissionDenied extends Error {
   constructor(public readonly source: keyof Grant) { super(`PermissionDenied: ${source}`); this.name = "PermissionDenied"; }
@@ -73,7 +73,7 @@ export function forecastGaps(snapshot: EatingSnapshot, opportunities: readonly S
   return FOOD_GROUPS.filter(group=>!snapshot.today.some(log=>log.recognized && log.groups.includes(group))).map(group=>{
     const probability = slots.reduce((product,slot)=>{
       const {k,n} = slotEvidence(snapshot.history,slot,group);
-      return product * (1 - posteriorMean(loaded.table[slot.slot][group],PRIOR_STRENGTH,k,n));
+      return product * (1 - posteriorMean(loaded.table[slot.slot][weekend(slot.day) ? "weekend" : "weekday"].groups[group].mu,PRIOR_STRENGTH,k,n));
     },1);
     // Visibility policy does not alter the forecast probability or its scoring eligibility.
     const internalOnly = snapshot.profile.appetite !== "typical" || group === "fats_oils" || group === "herbs_spices";

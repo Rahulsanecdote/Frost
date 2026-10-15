@@ -21,7 +21,8 @@ describe("eating contracts",()=>{
     const f=fixture(); f.snapshot.history=[meal({day:"2026-09-28",groups:["vegetables"]}),meal({day:"2026-09-27",groups:[]})];
     const opportunities=f.opportunities.filter(s=>s.slot==="lunch" || s.slot==="dinner");
     const branch=forecastGaps(f.snapshot,opportunities).find(b=>b.subject==="vegetables")!;
-    expect(branch.probability).toBeCloseTo((1-3/5)*(1-0.5));
+    const priors=loadPriors().table;
+    expect(branch.probability).toBeCloseTo((1-(4*priors.lunch.weekday.groups.vegetables.mu+1)/5)*(1-priors.dinner.weekday.groups.vegetables.mu));
   });
   it("missing days and unrecognized foods never become negative evidence",()=>{
     const f=fixture(), slot=f.opportunities.find(s=>s.slot==="lunch")!;
@@ -57,7 +58,7 @@ describe("eating contracts",()=>{
   });
   it("binds the prior hash to its canonical table",()=>{
     const a=loadPriors(); const table=JSON.parse(JSON.stringify(a.table)) as typeof a.table;
-    table.lunch.vegetables=0.6;const b=loadPriors(table);expect(a.priorsVersion).not.toBe(b.priorsVersion);
+    table.lunch.weekday.groups.vegetables.mu=0.6;const b=loadPriors(table);expect(a.priorsVersion).not.toBe(b.priorsVersion);
     const f=fixture();expect(()=>forecastGaps(f.snapshot,f.opportunities,b)).toThrow("Priors version mismatch");
   });
   for(const source of ["meals","lifestyle","connected_apps"] as const) it(`denies ${source} data under none`,()=>{
@@ -119,7 +120,7 @@ describe("eating contracts",()=>{
     const pairs=generateFixtures(123).flatMap(f=>forecastGaps(f.snapshot,f.opportunities).map(branch=>({branch,resolution:resolveGap(branch,f.opportunities,f.outcomes,branch.windowEnd),neverShown:true})));
     const score=scoreShadow(pairs);
     expect(score.resolved).toBeGreaterThan(0);expect(score.resolvedShare).toBeLessThan(1);
-    console.log(`food_group_gap: Brier=${score.score?.toFixed(6)}; resolved share=${score.resolvedShare.toFixed(6)} (${score.resolved}/${score.total}); placeholder rates — not evidence; plumbing check only; excluded from §7 kill criterion`);
+    console.log(`food_group_gap: Brier=${score.score?.toFixed(6)}; resolved share=${score.resolvedShare.toFixed(6)} (${score.resolved}/${score.total}); synthetic fixtures — not evidence; plumbing check only; excluded from §7 kill criterion`);
   });
 });
 
