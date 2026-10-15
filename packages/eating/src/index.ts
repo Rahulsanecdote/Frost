@@ -76,7 +76,7 @@ export function forecastGaps(snapshot: EatingSnapshot, opportunities: readonly S
       return product * (1 - posteriorMean(loaded.table[slot.slot][weekend(slot.day) ? "weekend" : "weekday"].groups[group].mu,PRIOR_STRENGTH,k,n));
     },1);
     // Visibility policy does not alter the forecast probability or its scoring eligibility.
-    const internalOnly = snapshot.profile.appetite !== "typical" || group === "fats_oils" || group === "herbs_spices";
+    const internalOnly = snapshot.profile.appetite !== "typical" || group === "fats_oils" || group === "herbs_spices" || group === "fermented";
     return { id:snapshotHash({snapshotHash:hash,priorsVersion:loaded.priorsVersion,group,slots}),kind:"food_group_gap",subject:group,probability,
       windowStart:snapshot.now,windowEnd:end,internalOnly,
       summary:internalOnly ? null : `No ${labels[group]} logged yet today. There's room to add some if it fits your choices.`,

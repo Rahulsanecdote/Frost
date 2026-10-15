@@ -82,7 +82,7 @@ describe("eating contracts",()=>{
       expect(branch.summary).toMatch(/^No .+ logged yet today\. There's room to add some if it fits your choices\.$/);
       expect(branch.summary).not.toMatch(banned);
     }
-    expect(visible).toBe(20);
+    expect(visible).toBe(18);
     const f=fixture();
     expect(forecastGaps(f.snapshot,f.opportunities).find(b=>b.subject==="vegetables")!.summary)
       .toBe("No vegetables logged yet today. There's room to add some if it fits your choices.");
@@ -108,6 +108,17 @@ describe("eating contracts",()=>{
       }
       const pairs=branches.map(branch=>({branch,resolution:{branchId:branch.id,occurred:true,resolvedAt:branch.windowEnd},neverShown:true}));
       expect(scoreShadow(pairs).resolved).toBe(2);
+    }
+  });
+  it("keeps fermented forecasts internal for every profile and still scores them",()=>{
+    for(const appetite of ["typical","low","selective"] as const){
+      const f=fixture();f.snapshot.profile.appetite=appetite;
+      const branch=forecastGaps(f.snapshot,f.opportunities).find(b=>b.subject==="fermented")!;
+      expect(branch).toBeDefined();expect(branch.internalOnly).toBe(true);expect(branch.summary).toBeNull();
+      const resolution={branchId:branch.id,occurred:true,resolvedAt:branch.windowEnd};
+      const score=scoreShadow([{branch,resolution,neverShown:true}]);
+      expect(score.resolved).toBe(1);expect(score.resolvedShare).toBe(1);
+      expect(score.score).toBeCloseTo((1-branch.probability)**2);
     }
   });
   it("scores only never-shown matching resolutions",()=>{
